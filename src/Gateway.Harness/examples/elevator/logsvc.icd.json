@@ -1,0 +1,16 @@
+{
+  "device": "logsvc",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      "name": "Heartbeat",
+      "command": "0x0040",
+      "direction": "outbound",
+      "fields": [
+        { "name": "uptime", "type": "u32", "unit": "ms", "min": 0, "max": 4294967295 }
+      ]
+    }
+  ]
+}

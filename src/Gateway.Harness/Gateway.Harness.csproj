@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gateway.Core\Gateway.Core.csproj" />
+    <ProjectReference Include="..\Gateway.Protocol\Gateway.Protocol.csproj" />
+    <ProjectReference Include="..\Gateway.Devices\Gateway.Devices.csproj" />
+    <ProjectReference Include="..\Gateway.Ethernet\Gateway.Ethernet.csproj" />
+    <ProjectReference Include="..\Gateway.Configuration\Gateway.Configuration.csproj" />
+    <ProjectReference Include="..\Gateway.Icd\Gateway.Icd.csproj" />
+    <ProjectReference Include="..\Gateway.Verification\Gateway.Verification.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="gateway.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="examples\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

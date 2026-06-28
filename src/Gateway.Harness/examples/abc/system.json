@@ -1,0 +1,14 @@
+{
+  // a/b/c demo topology: one emulated peer ("abc") talking to the developer's code ("dut").
+  // dutIp/dutMac tell the peer where to send; in demo mode the echo stand-in answers from them.
+  "dut": "dut",
+  "dutIp": "192.168.50.1",
+  "dutMac": "02-00-00-00-00-01",
+  "participants": [
+    { "id": "abc", "icd": "abc.icd.json", "ip": "192.168.50.60", "mac": "02-00-00-00-50-60" }
+  ],
+  "interfaces": [
+    { "from": "abc", "to": "dut", "messages": ["STRUCT_ABC", "SET_MODE"] },
+    { "from": "dut", "to": "abc", "messages": ["ACK_ABC"] }
+  ]
+}

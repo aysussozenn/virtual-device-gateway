@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gateway.Core\Gateway.Core.csproj" />
+    <ProjectReference Include="..\Gateway.Protocol\Gateway.Protocol.csproj" />
+    <ProjectReference Include="..\Gateway.Devices\Gateway.Devices.csproj" />
+    <ProjectReference Include="..\Gateway.Ethernet\Gateway.Ethernet.csproj" />
+    <ProjectReference Include="..\Gateway.Configuration\Gateway.Configuration.csproj" />
+    <ProjectReference Include="..\Gateway.Icd\Gateway.Icd.csproj" />
+    <ProjectReference Include="..\Gateway.Peers\Gateway.Peers.csproj" />
+    <ProjectReference Include="..\Gateway.Verification\Gateway.Verification.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="gateway.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Reuse the harness's example ICDs without duplicating them. -->
+    <None Include="..\Gateway.Harness\examples\**\*.json"
+          Link="examples\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,43 @@
+﻿<Application x:Class="Gateway.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Gateway.App"
+             xmlns:conv="clr-namespace:Gateway.App.Converters"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <conv:InverseBooleanConverter x:Key="Not"/>
+            <conv:DirectionBrushConverter x:Key="DirBrush"/>
+            <BooleanToVisibilityConverter x:Key="BoolVis"/>
+
+            <!-- Pluggable field editors: a field's "widget" hint resolves to one of these.
+                 A third party adds "editor.<name>" here and sets "widget":"<name>" on the ICD field. -->
+            <conv:FieldEditorTemplateSelector x:Key="FieldEditor"/>
+
+            <DataTemplate x:Key="editor.slider">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="92"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider Grid.Column="0" VerticalAlignment="Center"
+                            Minimum="{Binding SliderMin}" Maximum="{Binding SliderMax}" Value="{Binding Value}"/>
+                    <TextBox Grid.Column="1" Margin="8,0,0,0" FontFamily="Consolas"
+                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"/>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="editor.enum">
+                <ComboBox VerticalAlignment="Center" ItemsSource="{Binding EnumOptions}"
+                          SelectedItem="{Binding SelectedEnum}" DisplayMemberPath="Display"/>
+            </DataTemplate>
+
+            <DataTemplate x:Key="editor.text">
+                <TextBox FontFamily="Consolas" Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"/>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

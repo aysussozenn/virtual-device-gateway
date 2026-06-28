@@ -1,0 +1,41 @@
+{
+  // Minimal ICD for the a/b/c demo. STRUCT_ABC is the periodic struct the peer pushes to
+  // the DUT; ACK_ABC is what the DUT (or the demo echo stand-in) sends back. The echo copies
+  // same-named fields, so editing 'a' on the outgoing side shows up as 'a' on the incoming side.
+  "device": "abc",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      "name": "STRUCT_ABC",
+      "command": "0x0010",
+      "direction": "inbound",
+      "port": { "kind": "sampling", "dir": "outbound", "refreshMs": 100 },
+      "fields": [
+        { "name": "a",    "type": "u16",  "min": 0,     "max": 65535 },
+        { "name": "b",    "type": "i16",  "min": -1000, "max": 1000 },
+        { "name": "c",    "type": "f32" },
+        { "name": "gain", "type": "q8_8", "unit": "x",  "min": 0, "max": 20 }
+      ]
+    },
+    {
+      "name": "SET_MODE",
+      "command": "0x0011",
+      "direction": "inbound",
+      "port": { "kind": "queuing", "dir": "outbound", "depth": 8 },
+      "fields": [
+        { "name": "mode", "type": "u8", "enum": { "0": "OFF", "1": "AUTO", "2": "MANUAL" } }
+      ]
+    },
+    {
+      "name": "ACK_ABC",
+      "command": "0x0090",
+      "direction": "outbound",
+      "fields": [
+        { "name": "a",      "type": "u16" },
+        { "name": "status", "type": "u8", "enum": { "0": "OK", "1": "REJECT" } }
+      ]
+    }
+  ]
+}

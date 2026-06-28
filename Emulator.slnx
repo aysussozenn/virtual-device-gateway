@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Gateway.App/Gateway.App.csproj" />
+    <Project Path="src/Gateway.Configuration/Gateway.Configuration.csproj" />
+    <Project Path="src/Gateway.Core/Gateway.Core.csproj" />
+    <Project Path="src/Gateway.Devices/Gateway.Devices.csproj" />
+    <Project Path="src/Gateway.Ethernet/Gateway.Ethernet.csproj" />
+    <Project Path="src/Gateway.Harness/Gateway.Harness.csproj" />
+    <Project Path="src/Gateway.Icd/Gateway.Icd.csproj" />
+    <Project Path="src/Gateway.Peers/Gateway.Peers.csproj" />
+    <Project Path="src/Gateway.Verification/Gateway.Verification.csproj" />
+    <Project Path="src/Gateway.Protocol/Gateway.Protocol.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Gateway.Devices.Tests/Gateway.Devices.Tests.csproj" />
+  </Folder>
+</Solution>

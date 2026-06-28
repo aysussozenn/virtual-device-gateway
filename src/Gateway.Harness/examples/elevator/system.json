@@ -1,0 +1,15 @@
+{
+  // "who talks to whom" — transcribed from the ICD's interface-partner table.
+  // The DUT (fcc) is the developer's code; its neighbours are the peers we emulate.
+  "dut": "fcc",
+  "participants": [
+    { "id": "nav",    "icd": "nav.icd.json",    "ip": "192.168.50.20", "mac": "02-00-00-00-50-20" },
+    { "id": "surf",   "icd": "surf.icd.json",   "ip": "192.168.50.30", "mac": "02-00-00-00-50-30" },
+    { "id": "logsvc", "icd": "logsvc.icd.json", "ip": "192.168.50.40", "mac": "02-00-00-00-50-40" }
+  ],
+  "interfaces": [
+    { "from": "nav", "to": "fcc",    "messages": ["NAV_STATE"] },
+    { "from": "fcc", "to": "surf",   "messages": ["SetElevator"] },
+    { "from": "fcc", "to": "logsvc", "messages": ["Heartbeat"] }
+  ]
+}

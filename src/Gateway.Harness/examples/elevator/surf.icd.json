@@ -1,0 +1,16 @@
+{
+  "device": "surf",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      "name": "SetElevator",
+      "command": "0x0021",
+      "direction": "outbound",
+      "fields": [
+        { "name": "deflection", "type": "i16", "unit": "deci-deg", "min": -300, "max": 300 }
+      ]
+    }
+  ]
+}

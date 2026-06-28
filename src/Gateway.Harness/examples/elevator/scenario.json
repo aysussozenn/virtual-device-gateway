@@ -1,0 +1,20 @@
+{
+  // Data-driven scenario: the message timeline + the choreography rule.
+  // Edit these to match YOUR ICD — message names, field values, and the 'where' rule.
+  "scenario": "elevator",
+  "events": [
+    { "t": 0,   "message": "NAV_STATE",   "fields": { "heading": 900, "pitch": 120 } },
+    { "t": 8,   "message": "SetElevator", "fields": { "deflection": -120 } },
+    { "t": 50,  "message": "NAV_STATE",   "fields": { "heading": 900, "pitch": 340 } },
+    { "t": 70,  "message": "SetElevator", "fields": { "deflection": -340 } },
+    { "t": 100, "message": "NAV_STATE",   "fields": { "heading": 900, "pitch": 50 } }
+  ],
+  "expectations": [
+    {
+      "on": "NAV_STATE",
+      "expect": "SetElevator",
+      "within": 30,
+      "where": "resp.deflection == clamp(-trig.pitch, -300, 300)"
+    }
+  ]
+}

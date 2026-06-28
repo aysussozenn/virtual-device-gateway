@@ -1,0 +1,17 @@
+{
+  "adapter": null,
+  "devices": [
+    {
+      "id": "demo-echo-1",
+      "ip": "192.168.50.10",
+      "mac": "02-00-00-00-50-10",
+      "behavior": {
+        "type": "canned",
+        "map": {
+          "0x00": "DE AD BE EF"
+        }
+      },
+      "fault": { "dropProbability": 0.0, "extraLatencyMs": 0, "corruptProbability": 0.0 }
+    }
+  ]
+}

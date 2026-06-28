@@ -1,0 +1,51 @@
+{
+  "adapter": null,
+  "devices": [
+    {
+      "id": "temp-controller",
+      "ip": "192.168.50.10",
+      "mac": "02-00-00-00-50-10",
+      "behavior": {
+        "type": "parameters",
+        "parameters": [
+          { "name": "Temperature",  "unit": "°C",  "value": 21.5, "min": 18,  "max": 26,  "jitter": 0.25, "decimals": 1 },
+          { "name": "Setpoint",     "unit": "°C",  "value": 22.0, "min": 22,  "max": 22,  "jitter": 0,    "decimals": 1 },
+          { "name": "Humidity",     "unit": "%",   "value": 45,   "min": 38,  "max": 55,  "jitter": 0.8,  "decimals": 0 },
+          { "name": "FanSpeed",     "unit": "rpm", "value": 1200, "min": 900, "max": 1600,"jitter": 40,   "decimals": 0 },
+          { "name": "HeaterDuty",   "unit": "%",   "value": 30,   "min": 0,   "max": 100, "jitter": 3,    "decimals": 0 }
+        ]
+      }
+    },
+    {
+      "id": "power-meter",
+      "ip": "192.168.50.11",
+      "mac": "02-00-00-00-50-11",
+      "behavior": {
+        "type": "parameters",
+        "parameters": [
+          { "name": "Voltage",     "unit": "V",  "value": 230, "min": 224, "max": 236, "jitter": 0.6, "decimals": 1 },
+          { "name": "Current",     "unit": "A",  "value": 8.2, "min": 5,   "max": 12,  "jitter": 0.3, "decimals": 2 },
+          { "name": "Power",       "unit": "W",  "value": 1886,"min": 1100,"max": 2800,"jitter": 60,  "decimals": 0 },
+          { "name": "Frequency",   "unit": "Hz", "value": 50,  "min": 49.8,"max": 50.2,"jitter": 0.03,"decimals": 2 },
+          { "name": "PowerFactor", "unit": "",   "value": 0.96,"min": 0.9, "max": 1,   "jitter": 0.01,"decimals": 2 }
+        ]
+      }
+    },
+    {
+      "id": "motor-drive",
+      "ip": "192.168.50.12",
+      "mac": "02-00-00-00-50-12",
+      "behavior": {
+        "type": "parameters",
+        "parameters": [
+          { "name": "Speed",     "unit": "rpm",  "value": 1450, "min": 0,  "max": 3000, "jitter": 50, "decimals": 0 },
+          { "name": "Torque",    "unit": "Nm",   "value": 12.4, "min": 0,  "max": 40,   "jitter": 0.8,"decimals": 1 },
+          { "name": "Current",   "unit": "A",    "value": 6.1,  "min": 0,  "max": 15,   "jitter": 0.4,"decimals": 1 },
+          { "name": "Temp",      "unit": "°C",   "value": 48,   "min": 35, "max": 85,   "jitter": 0.7,"decimals": 0 },
+          { "name": "Vibration", "unit": "mm/s", "value": 1.2,  "min": 0,  "max": 6,    "jitter": 0.2,"decimals": 2 },
+          { "name": "DCBus",     "unit": "V",    "value": 540,  "min": 520,"max": 560,  "jitter": 2,  "decimals": 0 }
+        ]
+      }
+    }
+  ]
+}

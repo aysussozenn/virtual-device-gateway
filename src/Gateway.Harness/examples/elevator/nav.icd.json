@@ -1,0 +1,18 @@
+{
+  "device": "nav",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      "name": "NAV_STATE",
+      "command": "0x0001",
+      "direction": "inbound",
+      "port": { "kind": "sampling", "dir": "outbound", "refreshMs": 50 },
+      "fields": [
+        { "name": "heading", "type": "u16", "unit": "deci-deg", "min": 0,    "max": 3599 },
+        { "name": "pitch",   "type": "i16", "unit": "deci-deg", "min": -900, "max": 900 }
+      ]
+    }
+  ]
+}
