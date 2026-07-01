@@ -1,0 +1,13 @@
+{
+  // A = the rehosted app (DUT). B = the emulated speaker peer.
+  "dut": "a",
+  "dutIp": "192.168.50.1",
+  "dutMac": "02-00-00-00-00-01",
+  "participants": [
+    { "id": "b", "icd": "spk.icd.json", "ip": "192.168.50.70", "mac": "02-00-00-00-50-70" }
+  ],
+  "interfaces": [
+    { "from": "a", "to": "b", "messages": ["SET_VOLUME"] },
+    { "from": "b", "to": "a", "messages": ["VOLUME_ACK"] }
+  ]
+}

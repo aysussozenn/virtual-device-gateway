@@ -50,8 +50,14 @@ try
         case "demo":
             await DemoAsync(args.Length > 1 ? args[1] : "gateway.json");
             break;
+        case "peers":
+            Environment.ExitCode = await PeersDemo.RunAsync();
+            break;
+        case "volume":
+            Environment.ExitCode = await VolumeDemo.RunAsync();
+            break;
         default:
-            Console.WriteLine("Usage: Gateway.Harness [list|run <config>|selftest|conformance|verify [--system <p>] [--scenario <p>] [--json <p>] [--junit <p>] [--strict] [--live]]");
+            Console.WriteLine("Usage: Gateway.Harness [list|run <config>|selftest|conformance|verify|peers [--system <p>] [--scenario <p>] [--json <p>] [--junit <p>] [--strict] [--live]]");
             break;
     }
 }
@@ -79,7 +85,7 @@ void ListAdapters()
 
 GatewayEngine BuildEngine(GatewayConfig config, IPacketTransport transport)
 {
-    var registry = DeviceFactory.BuildRegistry(config, TimeProvider.System, loggerFactory);
+    var registry = DeviceFactory.BuildRegistry(config, SystemClock.Instance, loggerFactory);
     return new GatewayEngine(transport, registry, new PassthroughProtocolCodec(),
         new EthernetGatewayOptions(), loggerFactory.CreateLogger<GatewayEngine>());
 }

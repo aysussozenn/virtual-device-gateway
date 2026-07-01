@@ -17,7 +17,7 @@ public class BehaviorTests
 
     private static IDeviceContext Context() => new DeviceContext(
         new DeviceIdentity("d", IPAddress.Parse("192.168.50.10"), PhysicalAddress.Parse("02-00-00-00-50-10")),
-        TimeProvider.System, NullLogger.Instance);
+        SystemClock.Instance, NullLogger.Instance);
 
     [Fact]
     public async Task Canned_returns_mapped_reply()
@@ -70,7 +70,7 @@ public class BehaviorTests
     {
         var identity = new DeviceIdentity("d", IPAddress.Parse("192.168.50.10"), PhysicalAddress.Parse("02-00-00-00-50-10"));
         var behavior = new CannedBehavior(new Dictionary<ushort, DeviceReply> { [0] = new(0, new byte[] { 0xAB }) });
-        var device = new SimulatedDevice(identity, behavior, TimeProvider.System, NullLogger.Instance);
+        var device = new SimulatedDevice(identity, behavior, SystemClock.Instance, NullLogger.Instance);
 
         var reply = await device.HandleAsync(Request(), default);
 

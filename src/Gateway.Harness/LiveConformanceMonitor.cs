@@ -11,11 +11,20 @@ namespace Gateway.Harness;
 /// engine stays oblivious to the ICD; this listener is a pure observer over the frame tap,
 /// which is exactly how the design keeps the protocol spec confined to one seam.
 /// </summary>
-public sealed class LiveConformanceMonitor(IcdSpec spec, ConformanceRecorder recorder)
+public sealed class LiveConformanceMonitor
 {
-    private readonly IcdCodec _codec = new(spec);
+    private readonly IcdSpec spec;
+    private readonly ConformanceRecorder recorder;
+    private readonly IcdCodec _codec;
     private readonly List<TraceEvent> _trace = new();
     private readonly Stopwatch _clock = Stopwatch.StartNew();
+
+    public LiveConformanceMonitor(IcdSpec spec, ConformanceRecorder recorder)
+    {
+        this.spec = spec;
+        this.recorder = recorder;
+        _codec = new IcdCodec(spec);
+    }
 
     public IReadOnlyList<TraceEvent> Trace => _trace;
 

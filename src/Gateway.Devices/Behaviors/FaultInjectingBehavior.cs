@@ -15,9 +15,18 @@ public sealed record FaultPolicy(
 /// <summary>
 /// Decorator that wraps any <see cref="IDeviceBehavior"/> and injects faults around it.
 /// </summary>
-public sealed class FaultInjectingBehavior(IDeviceBehavior inner, FaultPolicy policy, Random? rng = null) : IDeviceBehavior
+public sealed class FaultInjectingBehavior : IDeviceBehavior
 {
-    private readonly Random _rng = rng ?? Random.Shared;
+    private readonly IDeviceBehavior inner;
+    private readonly FaultPolicy policy;
+    private readonly Random _rng;
+
+    public FaultInjectingBehavior(IDeviceBehavior inner, FaultPolicy policy, Random? rng = null)
+    {
+        this.inner = inner;
+        this.policy = policy;
+        _rng = rng ?? Random.Shared;
+    }
 
     public async ValueTask<DeviceReply?> RespondAsync(DeviceRequest request, IDeviceContext context, CancellationToken ct)
     {
@@ -25,7 +34,7 @@ public sealed class FaultInjectingBehavior(IDeviceBehavior inner, FaultPolicy po
             return null;
 
         if (policy.ExtraLatency > TimeSpan.Zero)
-            await Task.Delay(policy.ExtraLatency, context.Clock, ct).ConfigureAwait(false);
+            await context.Clock.DelayAsync(policy.ExtraLatency, ct).ConfigureAwait(false);
 
         var reply = await inner.RespondAsync(request, context, ct).ConfigureAwait(false);
         if (reply is null)

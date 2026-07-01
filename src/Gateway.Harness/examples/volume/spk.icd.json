@@ -1,0 +1,31 @@
+{
+  // Volume round-trip ICD.
+  //   A (DUT) -> B : SET_VOLUME   (A asks B to set a volume)
+  //   B -> A (DUT) : VOLUME_ACK   (B applies it, maybe adjusts, and reports the value back)
+  // Both messages carry a field named 'volume' — that shared name is what lets A see its own
+  // value come back. B clamps to 0..100, so A also learns when its request was adjusted.
+  "device": "spk",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      "name": "SET_VOLUME",
+      "command": "0x0040",
+      "direction": "outbound",
+      "fields": [
+        { "name": "volume", "type": "u8", "unit": "%", "min": 0, "max": 150 }
+      ]
+    },
+    {
+      "name": "VOLUME_ACK",
+      "command": "0x00C0",
+      "direction": "inbound",
+      "port": { "kind": "sampling", "dir": "outbound", "refreshMs": 100 },
+      "fields": [
+        { "name": "volume", "type": "u8", "unit": "%", "min": 0, "max": 100 },
+        { "name": "muted",  "type": "u8", "enum": { "0": "NO", "1": "YES" } }
+      ]
+    }
+  ]
+}

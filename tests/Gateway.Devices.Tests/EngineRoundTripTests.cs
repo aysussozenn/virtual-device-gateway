@@ -29,7 +29,7 @@ public class EngineRoundTripTests
     {
         var identity = new DeviceIdentity("dut", IPAddress.Parse(ip), PhysicalAddress.Parse(mac));
         var behavior = new CannedBehavior(new Dictionary<ushort, DeviceReply> { [0] = new(0, reply) });
-        return new SimulatedDevice(identity, behavior, TimeProvider.System, NullLogger.Instance);
+        return new SimulatedDevice(identity, behavior, SystemClock.Instance, NullLogger.Instance);
     }
 
     private static byte[] BuildEthernetIpv4(string srcIp, string dstIp, string srcMac, string dstMac, byte[] payload)

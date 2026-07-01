@@ -1,5 +1,6 @@
 using System.Net;
 using Gateway.Configuration;
+using Gateway.Core;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Gateway.Devices.Tests;
@@ -43,7 +44,7 @@ public class ConfigLoadTests
         {
             File.WriteAllText(path, Json);
             var config = DeviceFactory.Load(path);
-            var registry = DeviceFactory.BuildRegistry(config, TimeProvider.System, NullLoggerFactory.Instance);
+            var registry = DeviceFactory.BuildRegistry(config, SystemClock.Instance, NullLoggerFactory.Instance);
 
             Assert.Equal(2, registry.Devices.Count);
             Assert.True(registry.Owns(IPAddress.Parse("192.168.50.10")));

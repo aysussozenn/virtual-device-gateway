@@ -176,7 +176,7 @@ public sealed class GatewayEngine : IAsyncDisposable
     {
         _transport.PacketReceived -= OnPacketReceived;
         _queue.Writer.TryComplete();
-        if (_cts is not null) await _cts.CancelAsync().ConfigureAwait(false);
+        if (_cts is not null) { _cts.Cancel(); await Task.CompletedTask.ConfigureAwait(false); }
         if (_worker is not null)
         {
             try { await _worker.ConfigureAwait(false); } catch { /* ignore */ }

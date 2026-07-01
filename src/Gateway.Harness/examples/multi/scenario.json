@@ -1,0 +1,29 @@
+{
+  // Multi-destination scenario: A -> B and A -> C, with a reply expected from each peer.
+  // Message source is resolved from system.json interfaces (CMD_* come from a, DATA_* from the peer).
+  "scenario": "multi",
+  "events": [
+    { "t": 0,   "message": "CMD_B",  "fields": { "setpoint": 100 } },
+    { "t": 10,  "message": "DATA_B", "fields": { "value": 100, "status": 0 } },
+    { "t": 20,  "message": "CMD_C",  "fields": { "mode": 1 } },
+    { "t": 35,  "message": "DATA_C", "fields": { "temp": 22, "status": 0 } },
+    { "t": 60,  "message": "CMD_B",  "fields": { "setpoint": -200 } },
+    { "t": 78,  "message": "DATA_B", "fields": { "value": -200, "status": 0 } },
+    { "t": 90,  "message": "CMD_C",  "fields": { "mode": 0 } },
+    { "t": 110, "message": "DATA_C", "fields": { "temp": 24, "status": 0 } }
+  ],
+  "expectations": [
+    {
+      "on": "CMD_B",
+      "expect": "DATA_B",
+      "within": 25,
+      "where": "resp.value == trig.setpoint"
+    },
+    {
+      "on": "CMD_C",
+      "expect": "DATA_C",
+      "within": 30,
+      "where": "resp.status == 0"
+    }
+  ]
+}

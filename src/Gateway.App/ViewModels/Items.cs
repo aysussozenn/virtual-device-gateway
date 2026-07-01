@@ -4,9 +4,14 @@ using SharpPcap;
 namespace Gateway.App.ViewModels;
 
 /// <summary>A capture adapter shown in the dropdown.</summary>
-public sealed class AdapterItem(ILiveDevice device)
+public sealed class AdapterItem
 {
-    public ILiveDevice Device { get; } = device;
+    public AdapterItem(ILiveDevice device)
+    {
+        Device = device;
+    }
+
+    public ILiveDevice Device { get; }
     public string Display => Device.Description ?? Device.Name;
     public override string ToString() => Display;
 }

@@ -1,7 +1,10 @@
 namespace Gateway.Icd;
 
 /// <summary>Thrown when an ICD or topology file cannot be parsed into the domain model.</summary>
-public sealed class IcdLoadException(string message) : Exception(message);
+public sealed class IcdLoadException : Exception
+{
+    public IcdLoadException(string message) : base(message) { }
+}
 
 /// <summary>
 /// Loads <see cref="IcdSpec"/>, <see cref="SystemTopology"/> and <see cref="ScenarioSpec"/> from

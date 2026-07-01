@@ -47,7 +47,7 @@ public static class LiveConformanceDemo
             }
         };
 
-        var registry = DeviceFactory.BuildRegistry(config, TimeProvider.System, quiet);
+        var registry = DeviceFactory.BuildRegistry(config, SystemClock.Instance, quiet);
         await using var engine = new GatewayEngine(gatewayPort, registry, new PassthroughProtocolCodec(),
             new EthernetGatewayOptions(), quiet.CreateLogger<GatewayEngine>());
 

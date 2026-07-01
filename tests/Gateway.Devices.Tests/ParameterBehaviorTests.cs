@@ -13,7 +13,7 @@ public class ParameterBehaviorTests
 
     private static IDeviceContext Context() => new DeviceContext(
         new DeviceIdentity("d", IPAddress.Parse("192.168.50.10"), PhysicalAddress.Parse("02-00-00-00-50-10")),
-        TimeProvider.System, NullLogger.Instance);
+        SystemClock.Instance, NullLogger.Instance);
 
     [Fact]
     public void Exposes_named_parameters()

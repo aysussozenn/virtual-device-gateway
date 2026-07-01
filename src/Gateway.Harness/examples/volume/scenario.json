@@ -1,0 +1,21 @@
+{
+  // Conformance view of the round-trip: A sets a volume, B must ack the SAME value back
+  // (when in range). The third round asks for 130 -> B clamps to 100, so the rule catches it.
+  "scenario": "volume",
+  "events": [
+    { "t": 0,  "message": "SET_VOLUME", "fields": { "volume": 30 } },
+    { "t": 8,  "message": "VOLUME_ACK", "fields": { "volume": 30, "muted": 0 } },
+    { "t": 40, "message": "SET_VOLUME", "fields": { "volume": 0 } },
+    { "t": 48, "message": "VOLUME_ACK", "fields": { "volume": 0, "muted": 1 } },
+    { "t": 80, "message": "SET_VOLUME", "fields": { "volume": 130 } },
+    { "t": 88, "message": "VOLUME_ACK", "fields": { "volume": 100, "muted": 0 } }
+  ],
+  "expectations": [
+    {
+      "on": "SET_VOLUME",
+      "expect": "VOLUME_ACK",
+      "within": 20,
+      "where": "resp.volume == clamp(trig.volume, 0, 100)"
+    }
+  ]
+}
