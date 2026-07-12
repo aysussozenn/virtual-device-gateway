@@ -10,10 +10,8 @@ namespace Gateway.Peers;
 public sealed record PeerDescriptor(string Id, IcdSpec Spec, IPAddress Ip, PhysicalAddress Mac);
 
 /// <summary>
-/// One emulated peer's send/receive endpoint on the wire. It encodes a message from named
-/// field values into an ICD frame (peer → DUT) and decodes inbound frames addressed to this
-/// peer (DUT → peer) back into named values. The transport medium (in-memory bus or a real
-/// adapter) is injected, so the same channel works for the demo and live paths unchanged.
+/// One emulated peer's send/receive endpoint on the wire. Routes by destination MAC.
+/// Outgoing frames use <see cref="FixedSrcMac"/> as the source MAC when set.
 /// </summary>
 public sealed class PeerChannel : IDisposable
 {
@@ -24,12 +22,17 @@ public sealed class PeerChannel : IDisposable
     private readonly PhysicalAddress _peerMac;
     private readonly PhysicalAddress _dutMac;
 
+    /// <summary>
+    /// Fixed source MAC for outgoing frames (bytes 6-11).
+    /// When null, _peerMac is used as source.
+    /// Set this to the constant MAC your protocol requires.
+    /// </summary>
+    public PhysicalAddress? FixedSrcMac { get; set; } = null;
+
     public string PeerId { get; }
     public IcdSpec Spec { get; }
     public IPAddress PeerIp => _peerIp;
 
-    /// <summary>Raised when a frame addressed to this peer decodes against its ICD. The long is a
-    /// monotonic millisecond timestamp (<see cref="Environment.TickCount64"/>) for freshness math.</summary>
     public event Action<DecodedMessage, long>? MessageDecoded;
 
     public PeerChannel(string peerId, IcdSpec spec, IPacketTransport transport,
@@ -55,13 +58,22 @@ public sealed class PeerChannel : IDisposable
     {
         var payload = _codec.Encode(msg, seq, fields);
         var ip = BuildIp(_peerIp, _dutIp, payload);
-        _transport.Send(LinkEncap.WrapIpv4(_transport.LinkType, ip, _peerMac, _dutMac));
+        // Src MAC: fixed if set, otherwise peer's own MAC
+        var srcMac = FixedSrcMac ?? _peerMac;
+        _transport.Send(LinkEncap.WrapIpv4(_transport.LinkType, ip, srcMac, _dutMac));
     }
 
     private void OnReceived(object? sender, PacketReceivedEventArgs e)
     {
-        var ip = LinkEncap.UnwrapIpv4(_transport.LinkType, e.Data, out _, out _);
-        if (ip is null || !ip.DestinationAddress.Equals(_peerIp)) return;
+        var ip = LinkEncap.UnwrapIpv4(_transport.LinkType, e.Data, out var eth, out _);
+        if (ip is null) return;
+
+        // Primary: route by destination MAC
+        var dstMac = eth?.DestinationHardwareAddress;
+        if (dstMac is not null && !dstMac.Equals(_peerMac)) return;
+
+        // Fallback: if no eth header (loopback), filter by destination IP
+        if (dstMac is null && !ip.DestinationAddress.Equals(_peerIp)) return;
 
         var payload = LinkEncap.IpPayload(_transport.LinkType, e.Data);
         if (payload.Length == 0) return;
@@ -74,10 +86,5 @@ public sealed class PeerChannel : IDisposable
     public void Dispose() => _transport.PacketReceived -= OnReceived;
 
     internal static IPv4Packet BuildIp(IPAddress src, IPAddress dst, byte[] payload)
-    {
-        var ip = new IPv4Packet(src, dst) { Protocol = ProtocolType.Udp, TimeToLive = 64, PayloadData = payload };
-        ip.UpdateIPChecksum();
-        ip.UpdateCalculatedValues();
-        return ip;
-    }
+        => LinkEncap.BuildUdpIp(src, dst, payload);
 }

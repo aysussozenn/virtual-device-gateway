@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.NetworkInformation;
 using PacketDotNet;
 using PacketDotNet.Utils;
@@ -13,6 +14,13 @@ namespace Gateway.Ethernet;
 public static class LinkEncap
 {
     private const uint AfInet = 2; // AF_INET, host byte order (little-endian on Windows)
+
+    /// <summary>Size of the UDP header carried inside every IPv4 frame (src/dst port, length, checksum).</summary>
+    public const int UdpHeaderBytes = 8;
+
+    // The emulator identifies frames by destination MAC, not by UDP port, so the port value is
+    // arbitrary — but it must be stable so the 8-byte header shape is constant on every frame.
+    private const ushort UdpPort = 0xC000;
 
     public static bool IsEthernet(LinkLayers type) => type == LinkLayers.Ethernet;
 
@@ -34,8 +42,44 @@ public static class LinkEncap
         if (totalLength < headerBytes || ipEnd > frame.Length)
             ipEnd = frame.Length;                 // fall back to whatever bytes we actually have
 
-        var payloadStart = ipOffset + headerBytes;
+        var payloadStart = ipOffset + headerBytes + UdpHeaderBytes; // skip the UDP header too
         return payloadStart > ipEnd ? Array.Empty<byte>() : frame[payloadStart..ipEnd];
+    }
+
+    /// <summary>
+    /// Builds an IPv4/UDP packet carrying <paramref name="payload"/>. A minimal 8-byte UDP header is
+    /// prepended so the on-wire header is Ethernet(14) + IP(20) + UDP(8) = 42 bytes, which is what the
+    /// application expects. <see cref="IpPayload"/> strips this header symmetrically on receive.
+    /// </summary>
+    public static IPv4Packet BuildUdpIp(IPAddress src, IPAddress dst, byte[] payload)
+    {
+        var ip = new IPv4Packet(src, dst)
+        {
+            Protocol = ProtocolType.Udp,
+            TimeToLive = 64,
+            PayloadData = UdpDatagram(payload)
+        };
+        ip.UpdateIPChecksum();
+        ip.UpdateCalculatedValues();
+        return ip;
+    }
+
+    /// <summary>
+    /// Prepends an 8-byte UDP header (src/dst port, length, zero checksum) to a raw payload.
+    /// The checksum is left 0, which is valid and means "not computed" for IPv4 UDP.
+    /// </summary>
+    private static byte[] UdpDatagram(byte[] payload)
+    {
+        var datagram = new byte[UdpHeaderBytes + payload.Length];
+        var length = (ushort)datagram.Length;
+
+        datagram[0] = (byte)(UdpPort >> 8); datagram[1] = (byte)(UdpPort & 0xFF); // source port
+        datagram[2] = (byte)(UdpPort >> 8); datagram[3] = (byte)(UdpPort & 0xFF); // destination port
+        datagram[4] = (byte)(length >> 8);  datagram[5] = (byte)(length & 0xFF);  // UDP length (header + payload)
+        // datagram[6..7] checksum stays 0
+
+        Buffer.BlockCopy(payload, 0, datagram, UdpHeaderBytes, payload.Length);
+        return datagram;
     }
 
     /// <summary>Extracts the IPv4 packet (and, on Ethernet, the Ethernet/ARP packets) from a captured frame.</summary>

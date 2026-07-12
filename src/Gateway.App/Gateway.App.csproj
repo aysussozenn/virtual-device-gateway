@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Gateway.Core\Gateway.Core.csproj" />
     <ProjectReference Include="..\Gateway.Protocol\Gateway.Protocol.csproj" />
+    <ProjectReference Include="..\Gateway.Devices\Gateway.Devices.csproj" />
     <ProjectReference Include="..\Gateway.Ethernet\Gateway.Ethernet.csproj" />
     <ProjectReference Include="..\Gateway.Configuration\Gateway.Configuration.csproj" />
     <ProjectReference Include="..\Gateway.Icd\Gateway.Icd.csproj" />
@@ -17,7 +18,9 @@
   <ItemGroup>
     <None Update="gateway.json" CopyToOutputDirectory="PreserveNewest" />
     <!-- Reuse the harness's example ICDs without duplicating them. -->
-    <None Include="..\Gateway.Harness\examples\**\*.json" Link="examples\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Gateway.Harness\examples\**\*.json"
+          Link="examples\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <PropertyGroup>

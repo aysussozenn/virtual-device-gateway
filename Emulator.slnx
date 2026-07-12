@@ -4,6 +4,7 @@
     <Project Path="src/Gateway.Configuration/Gateway.Configuration.csproj" />
     <Project Path="src/Gateway.Core/Gateway.Core.csproj" />
     <Project Path="src/Gateway.Devices/Gateway.Devices.csproj" />
+    <Project Path="src/Gateway.DutSim/Gateway.DutSim.csproj" />
     <Project Path="src/Gateway.Ethernet/Gateway.Ethernet.csproj" />
     <Project Path="src/Gateway.Harness/Gateway.Harness.csproj" />
     <Project Path="src/Gateway.Icd/Gateway.Icd.csproj" />

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Gateway.Core\Gateway.Core.csproj" />
     <ProjectReference Include="..\Gateway.Protocol\Gateway.Protocol.csproj" />
+    <ProjectReference Include="..\Gateway.Devices\Gateway.Devices.csproj" />
   </ItemGroup>
 
   <ItemGroup>

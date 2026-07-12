@@ -3,10 +3,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Gateway.Core\Gateway.Core.csproj" />
     <ProjectReference Include="..\Gateway.Protocol\Gateway.Protocol.csproj" />
+    <ProjectReference Include="..\Gateway.Devices\Gateway.Devices.csproj" />
     <ProjectReference Include="..\Gateway.Ethernet\Gateway.Ethernet.csproj" />
     <ProjectReference Include="..\Gateway.Configuration\Gateway.Configuration.csproj" />
     <ProjectReference Include="..\Gateway.Icd\Gateway.Icd.csproj" />
-    <ProjectReference Include="..\Gateway.Peers\Gateway.Peers.csproj" />
     <ProjectReference Include="..\Gateway.Verification\Gateway.Verification.csproj" />
   </ItemGroup>
 

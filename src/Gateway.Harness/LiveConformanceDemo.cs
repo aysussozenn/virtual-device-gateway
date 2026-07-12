@@ -68,9 +68,7 @@ public static class LiveConformanceDemo
         {
             var payload = codec.Encode(setElevator, seq++,
                 new Dictionary<string, double> { ["deflection"] = deflection });
-            var ip = new IPv4Packet(dutIp, surfIp) { Protocol = ProtocolType.Udp, TimeToLive = 64, PayloadData = payload };
-            ip.UpdateIPChecksum();
-            ip.UpdateCalculatedValues();
+            var ip = LinkEncap.BuildUdpIp(dutIp, surfIp, payload);
             dutPort.Send(LinkEncap.WrapIpv4(dutPort.LinkType, ip, dutMac, surfMac));
             await Task.Delay(40);
         }

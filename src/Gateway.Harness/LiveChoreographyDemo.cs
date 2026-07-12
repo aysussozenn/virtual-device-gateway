@@ -118,12 +118,7 @@ public static class LiveChoreographyDemo
     }
 
     private static IPv4Packet BuildIp(IPAddress src, IPAddress dst, byte[] payload)
-    {
-        var ip = new IPv4Packet(src, dst) { Protocol = ProtocolType.Udp, TimeToLive = 64, PayloadData = payload };
-        ip.UpdateIPChecksum();
-        ip.UpdateCalculatedValues();
-        return ip;
-    }
+        => LinkEncap.BuildUdpIp(src, dst, payload);
 
     private static PhysicalAddress Mac(string s) => PhysicalAddress.Parse(s.Replace(":", "-").ToUpperInvariant());
 }

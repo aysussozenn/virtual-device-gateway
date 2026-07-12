@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gateway.Ethernet\Gateway.Ethernet.csproj" />
+    <ProjectReference Include="..\Gateway.Icd\Gateway.Icd.csproj" />
+    <ProjectReference Include="..\Gateway.Peers\Gateway.Peers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reuse the harness's example ICDs so App B defaults to the same topology as the peer console. -->
+    <None Include="..\Gateway.Harness\examples\**\*.json"
+          Link="examples\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>Gateway.DutSim</AssemblyName>
+    <RootNamespace>Gateway.DutSim</RootNamespace>
+  </PropertyGroup>
+
+</Project>

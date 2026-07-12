@@ -50,14 +50,8 @@ try
         case "demo":
             await DemoAsync(args.Length > 1 ? args[1] : "gateway.json");
             break;
-        case "peers":
-            Environment.ExitCode = await PeersDemo.RunAsync();
-            break;
-        case "volume":
-            Environment.ExitCode = await VolumeDemo.RunAsync();
-            break;
         default:
-            Console.WriteLine("Usage: Gateway.Harness [list|run <config>|selftest|conformance|verify|peers [--system <p>] [--scenario <p>] [--json <p>] [--junit <p>] [--strict] [--live]]");
+            Console.WriteLine("Usage: Gateway.Harness [list|run <config>|selftest|conformance|verify [--system <p>] [--scenario <p>] [--json <p>] [--junit <p>] [--strict] [--live]]");
             break;
     }
 }
@@ -169,12 +163,9 @@ async Task SelfTestAsync()
 
     var appBMac = PhysicalAddress.Parse("02-00-00-00-00-01");
     var deviceMac = PhysicalAddress.Parse("02-00-00-00-50-10");
-    var request = new IPv4Packet(IPAddress.Parse("192.168.50.1"), IPAddress.Parse("192.168.50.10"))
-    {
-        Protocol = ProtocolType.Udp, TimeToLive = 64, PayloadData = new byte[] { 0x01, 0x02, 0x03 }
-    };
-    request.UpdateIPChecksum();
-    request.UpdateCalculatedValues();
+    var request = LinkEncap.BuildUdpIp(
+        IPAddress.Parse("192.168.50.1"), IPAddress.Parse("192.168.50.10"),
+        new byte[] { 0x01, 0x02, 0x03 });
 
     Console.WriteLine("Injecting 192.168.50.1 -> 192.168.50.10 over in-memory Ethernet bus ...");
     appB.Send(LinkEncap.WrapIpv4(appB.LinkType, request, appBMac, deviceMac));

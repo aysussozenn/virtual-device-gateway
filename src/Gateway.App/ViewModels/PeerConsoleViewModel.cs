@@ -33,7 +33,13 @@ public sealed class PeerConsoleViewModel : ObservableObject
     public PeerConsoleViewModel(ObservableCollection<AdapterItem> adapters)
     {
         Adapters = adapters;
-        _systemPath = Path.Combine(AppContext.BaseDirectory, "examples", "abc", "system.json");
+        // Optional launch-time overrides so the app can be started already wired to a
+        // scenario (GATEWAY_SYSTEM), on a real adapter (GATEWAY_LIVE=1), and running
+        // (GATEWAY_AUTOSTART=1) with no clicks. Absent env vars keep the old defaults.
+        _systemPath = Environment.GetEnvironmentVariable("GATEWAY_SYSTEM") is { Length: > 0 } sys
+            ? sys
+            : Path.Combine(AppContext.BaseDirectory, "examples", "abc", "system.json");
+        if (Environment.GetEnvironmentVariable("GATEWAY_LIVE") == "1") _demoMode = false;
 
         BrowseCommand = new RelayCommand(Browse);
         LoadCommand = new RelayCommand(Load);
@@ -43,6 +49,8 @@ public sealed class PeerConsoleViewModel : ObservableObject
 
         SelectDefaultAdapter();
         if (File.Exists(_systemPath)) Load();
+        if (Environment.GetEnvironmentVariable("GATEWAY_AUTOSTART") == "1" && StartCommand.CanExecute(null))
+            Start();
     }
 
     /// <summary>Picks a sensible default capture adapter (prefer a loopback) if none chosen yet.</summary>
