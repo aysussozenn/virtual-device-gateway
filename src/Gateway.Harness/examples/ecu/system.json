@@ -1,0 +1,17 @@
+{
+  // Single-peer topology for the complex ECU ICD.
+  //   vcu = the vehicle control unit (developer's code / DUT).
+  //   ecu = the engine control unit, emulated by the virtual-gateway-device.
+  // The DUT sends ECU_COMMAND / ECU_CONFIG; the ECU streams ECU_TELEMETRY and
+  // reports ECU_FAULT.
+  "dut": "vcu",
+  "dutIp": "192.168.50.1",
+  "dutMac": "02-00-00-00-00-01",
+  "participants": [
+    { "id": "ecu", "icd": "ecu.icd.json", "ip": "192.168.50.90", "mac": "02-00-00-00-50-90" }
+  ],
+  "interfaces": [
+    { "from": "vcu", "to": "ecu", "messages": ["ECU_COMMAND", "ECU_CONFIG"] },
+    { "from": "ecu", "to": "vcu", "messages": ["ECU_TELEMETRY", "ECU_FAULT"] }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  // Exercises the complex ECU ICD end-to-end so `verify` can encode/decode every
+  // message and check a couple of cross-message contracts.
+  //   - The ECU must reflect the commanded drive mode in its telemetry.
+  //   - After a fault report the telemetry status must be degraded (>= WARN).
+  "scenario": "ecu",
+  "events": [
+    { "t": 0,   "message": "ECU_CONFIG",    "fields": { "map_id": 1, "idle_rpm": 800, "redline_rpm": 7000, "temp_warn": 105, "temp_crit": 120, "oil_min": 150, "cfg_crc": 305419896 } },
+    { "t": 5,   "message": "ECU_COMMAND",   "fields": { "throttle": 250, "mode": 1, "ignition_advance": 12, "fuel_trim": 0, "boost_target": 0, "gear_request": 1, "rev_limiter": 7000, "launch_control": 0, "torque_limit": 180.5, "flags": 0 } },
+    { "t": 25,  "message": "ECU_TELEMETRY", "fields": { "rpm": 1500, "coolant_temp": 70, "oil_temp": 82, "oil_pressure": 320, "intake_temp": 30, "manifold_pressure": 98, "battery_voltage": 14.1, "fuel_flow": 3.4, "lambda": 1.0, "throttle_pos": 250, "trip_fuel_mm3": 125000, "gear": 1, "mode": 1, "status": 0, "odometer": 48210 } },
+    { "t": 50,  "message": "ECU_COMMAND",   "fields": { "throttle": 800, "mode": 2, "ignition_advance": 20, "fuel_trim": 40, "boost_target": 180, "gear_request": 3, "rev_limiter": 7000, "launch_control": 1, "torque_limit": 320.0, "flags": 1 } },
+    { "t": 70,  "message": "ECU_TELEMETRY", "fields": { "rpm": 5200, "coolant_temp": 96, "oil_temp": 118, "oil_pressure": 410, "intake_temp": 44, "manifold_pressure": 265, "battery_voltage": 13.8, "fuel_flow": 22.7, "lambda": 0.88, "throttle_pos": 800, "trip_fuel_mm3": 240000, "gear": 3, "mode": 2, "status": 1, "odometer": 48211 } },
+    { "t": 90,  "message": "ECU_FAULT",     "fields": { "fault_code": 513, "severity": 2, "occurrence_count": 1, "first_seen_ms": 70, "freeze_rpm": 5200, "freeze_temp": 98 } },
+    { "t": 120, "message": "ECU_COMMAND",   "fields": { "throttle": 100, "mode": 3, "ignition_advance": -5, "fuel_trim": -50, "boost_target": 0, "gear_request": 2, "rev_limiter": 4000, "launch_control": 0, "torque_limit": 90.0, "flags": 4 } },
+    { "t": 140, "message": "ECU_TELEMETRY", "fields": { "rpm": 1200, "coolant_temp": 112, "oil_temp": 128, "oil_pressure": 180, "intake_temp": 48, "manifold_pressure": 95, "battery_voltage": 13.5, "fuel_flow": 2.1, "lambda": 1.05, "throttle_pos": 100, "trip_fuel_mm3": 250000, "gear": 2, "mode": 3, "status": 2, "odometer": 48212 } }
+  ],
+  "expectations": [
+    {
+      "on": "ECU_COMMAND",
+      "expect": "ECU_TELEMETRY",
+      "within": 40,
+      "where": "resp.mode == trig.mode"
+    },
+    {
+      "on": "ECU_FAULT",
+      "expect": "ECU_TELEMETRY",
+      "within": 60,
+      "where": "resp.status >= 1"
+    }
+  ]
+}

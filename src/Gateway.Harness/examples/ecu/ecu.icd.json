@@ -1,0 +1,84 @@
+{
+  // Engine Control Unit (ECU) — a deliberately element-heavy ICD used as the "complex example".
+  //   The DUT is the vehicle control unit (vcu); the ECU is the peer we emulate.
+  //   direction "outbound" = DUT -> peer (vcu -> ecu)   — actuator commands / config
+  //   direction "inbound"  = peer -> DUT (ecu -> vcu)   — telemetry / faults
+  // Exercises every wire type (u8/i8/u16/i16/u32/i32/f32), enums, units, ranges,
+  // and both ARINC-653 port flavours (sampling + queuing).
+  "device": "ecu",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      "name": "ECU_COMMAND",
+      "command": "0x0100",
+      "direction": "outbound",
+      "port": { "kind": "sampling", "dir": "outbound", "refreshMs": 20, "maxSize": 64 },
+      "fields": [
+        { "name": "throttle",         "type": "u16", "unit": "permille", "min": 0,    "max": 1000 },
+        { "name": "mode",             "type": "u8",  "enum": { "0": "IDLE", "1": "RUN", "2": "BOOST", "3": "LIMP", "4": "SHUTDOWN" } },
+        { "name": "ignition_advance", "type": "i8",  "unit": "deg",      "min": -30,  "max": 45 },
+        { "name": "fuel_trim",        "type": "i16", "unit": "permille", "min": -250, "max": 250 },
+        { "name": "boost_target",     "type": "u16", "unit": "kPa",      "min": 0,    "max": 300 },
+        { "name": "gear_request",     "type": "u8",  "enum": { "0": "N", "1": "D1", "2": "D2", "3": "D3", "4": "D4", "5": "D5", "6": "D6", "15": "R" } },
+        { "name": "rev_limiter",      "type": "u16", "unit": "rpm",      "min": 1000, "max": 8000 },
+        { "name": "launch_control",   "type": "u8",  "enum": { "0": "OFF", "1": "ARMED" } },
+        { "name": "torque_limit",     "type": "f32", "unit": "Nm" },
+        { "name": "flags",            "type": "u8",  "unit": "bitmask" }
+      ]
+    },
+    {
+      "name": "ECU_CONFIG",
+      "command": "0x0101",
+      "direction": "outbound",
+      "port": { "kind": "queuing", "dir": "outbound", "depth": 8, "maxSize": 64 },
+      "fields": [
+        { "name": "map_id",      "type": "u8",  "enum": { "0": "STOCK", "1": "SPORT", "2": "ECO", "3": "CUSTOM" } },
+        { "name": "idle_rpm",    "type": "u16", "unit": "rpm",  "min": 600,  "max": 1500 },
+        { "name": "redline_rpm", "type": "u16", "unit": "rpm",  "min": 4000, "max": 9000 },
+        { "name": "temp_warn",   "type": "i16", "unit": "degC", "min": 80,   "max": 130 },
+        { "name": "temp_crit",   "type": "i16", "unit": "degC", "min": 100,  "max": 150 },
+        { "name": "oil_min",     "type": "u16", "unit": "kPa",  "min": 50,   "max": 400 },
+        { "name": "cfg_crc",     "type": "u32", "unit": "crc" }
+      ]
+    },
+    {
+      "name": "ECU_TELEMETRY",
+      "command": "0x0180",
+      "direction": "inbound",
+      "port": { "kind": "sampling", "dir": "outbound", "refreshMs": 20, "maxSize": 64 },
+      "fields": [
+        { "name": "rpm",               "type": "u16", "unit": "rpm",      "min": 0,    "max": 9000 },
+        { "name": "coolant_temp",      "type": "i16", "unit": "degC",     "min": -40,  "max": 150 },
+        { "name": "oil_temp",          "type": "i16", "unit": "degC",     "min": -40,  "max": 180 },
+        { "name": "oil_pressure",      "type": "u16", "unit": "kPa",      "min": 0,    "max": 800 },
+        { "name": "intake_temp",       "type": "i16", "unit": "degC",     "min": -40,  "max": 120 },
+        { "name": "manifold_pressure", "type": "u16", "unit": "kPa",      "min": 0,    "max": 400 },
+        { "name": "battery_voltage",   "type": "f32", "unit": "V" },
+        { "name": "fuel_flow",         "type": "f32", "unit": "L/h" },
+        { "name": "lambda",            "type": "f32", "unit": "ratio" },
+        { "name": "throttle_pos",      "type": "u16", "unit": "permille", "min": 0,    "max": 1000 },
+        { "name": "trip_fuel_mm3",     "type": "i32", "unit": "mm3" },
+        { "name": "gear",              "type": "u8",  "enum": { "0": "N", "1": "D1", "2": "D2", "3": "D3", "4": "D4", "5": "D5", "6": "D6", "15": "R" } },
+        { "name": "mode",              "type": "u8",  "enum": { "0": "IDLE", "1": "RUN", "2": "BOOST", "3": "LIMP", "4": "SHUTDOWN" } },
+        { "name": "status",            "type": "u8",  "enum": { "0": "OK", "1": "WARN", "2": "FAULT" } },
+        { "name": "odometer",          "type": "u32", "unit": "km" }
+      ]
+    },
+    {
+      "name": "ECU_FAULT",
+      "command": "0x0181",
+      "direction": "inbound",
+      "port": { "kind": "queuing", "dir": "outbound", "depth": 16, "maxSize": 32 },
+      "fields": [
+        { "name": "fault_code",       "type": "u16", "enum": { "0": "NONE", "256": "O2_SENSOR", "257": "MAP_SENSOR", "512": "MISFIRE", "513": "KNOCK", "768": "OVERHEAT", "769": "OIL_PRESSURE", "1024": "OVERBOOST" } },
+        { "name": "severity",         "type": "u8",  "enum": { "0": "INFO", "1": "WARNING", "2": "CRITICAL" } },
+        { "name": "occurrence_count", "type": "u16", "unit": "count", "min": 0, "max": 65535 },
+        { "name": "first_seen_ms",    "type": "u32", "unit": "ms" },
+        { "name": "freeze_rpm",       "type": "u16", "unit": "rpm",  "min": 0,   "max": 9000 },
+        { "name": "freeze_temp",      "type": "i16", "unit": "degC", "min": -40, "max": 180 }
+      ]
+    }
+  ]
+}
