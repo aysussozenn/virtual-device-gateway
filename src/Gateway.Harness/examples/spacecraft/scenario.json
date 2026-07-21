@@ -1,0 +1,38 @@
+{
+  // Multi-peer choreography: the OBC commands all three subsystems and each answers back.
+  // Message source is resolved from system.json interfaces (CMD_* from obc, telemetry from peers).
+  // Times are in milliseconds. Each expectation ties a command to the reply it must produce.
+  "scenario": "spacecraft",
+  "events": [
+    { "t": 0,   "message": "EPS_MODE_CMD", "fields": { "mode": 1, "heater_pct": 40 } },
+    { "t": 40,  "message": "EPS_TELEM",    "fields": { "bus_voltage": 28200, "bus_current": 1500, "batt_soc": 82, "batt_temp": 12, "solar_power": 45000, "mode": 1 } },
+
+    { "t": 80,  "message": "SLEW_CMD",     "fields": { "target_yaw": 4500, "target_pitch": 1000, "slew_rate": 200, "mode": 2 } },
+    { "t": 150, "message": "ADCS_STATE",   "fields": { "yaw": 4500, "pitch": 1000, "roll": 0, "rate_x": 5, "rate_y": -3, "rate_z": 0, "mode": 4, "quat_valid": 1 } },
+
+    { "t": 200, "message": "THM_SETPOINT", "fields": { "zone": 1, "setpoint": 150, "heater_enable": 1 } },
+    { "t": 430, "message": "THM_TELEM",    "fields": { "temp_payload": 210, "temp_batt": 155, "temp_radiator": -120, "heater_state": 1, "louver_pct": 30 } },
+
+    { "t": 470, "message": "EPS_FAULT",    "fields": { "code": 2, "latched": 1 } }
+  ],
+  "expectations": [
+    {
+      "on": "EPS_MODE_CMD",
+      "expect": "EPS_TELEM",
+      "within": 100,
+      "where": "resp.mode == trig.mode"
+    },
+    {
+      "on": "SLEW_CMD",
+      "expect": "ADCS_STATE",
+      "within": 100,
+      "where": "resp.yaw == trig.target_yaw"
+    },
+    {
+      "on": "THM_SETPOINT",
+      "expect": "THM_TELEM",
+      "within": 300,
+      "where": "resp.heater_state == trig.heater_enable"
+    }
+  ]
+}

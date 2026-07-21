@@ -200,6 +200,7 @@ public sealed class DutSimViewModel : ObservableObject
         _endpoint?.Dispose();
         _endpoint = null;
         _transport = null;
+        foreach (var p in Peers) p.Dispose();
         Peers.Clear();
     }
 

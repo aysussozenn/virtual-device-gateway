@@ -61,16 +61,19 @@ public sealed class SendFieldVm : ObservableObject
 
 /// <summary>
 /// One DUT → peer message the user can edit and transmit. Mirrors the peer console's outgoing
-/// card, but from the DUT's side of the wire.
+/// card, but from the DUT's side of the wire. A sampling message can be streamed periodically
+/// (Stream toggle) AND still sent one-shot; a queuing/aperiodic message is one-shot only.
 /// </summary>
-public sealed class SendMessageVm : ObservableObject
+public sealed class SendMessageVm : ObservableObject, IDisposable
 {
     private readonly DutEndpoint _endpoint;
     private readonly string _peerId;
     private readonly IcdMessage _message;
     private readonly Action<string> _log;
+    private readonly DutStream? _stream;
     private ushort _seq;
     private string _hexPreview = "";
+    private bool _isStreaming;
 
     public SendMessageVm(DutEndpoint endpoint, string peerId, IcdMessage message, Action<string> log)
     {
@@ -78,14 +81,22 @@ public sealed class SendMessageVm : ObservableObject
         _peerId = peerId;
         _message = message;
         _log = log;
+        IsSampling = message.Port == PortKind.Sampling;
+
         foreach (var f in message.Fields)
-            Fields.Add(new SendFieldVm(f, RefreshHex));
+            Fields.Add(new SendFieldVm(f, OnFieldChanged));
+
+        if (IsSampling)
+            _stream = new DutStream(endpoint, peerId, message, message.RefreshMs ?? 100);
+
         SendCommand = new RelayCommand(Send);
-        RefreshHex();
+        OnFieldChanged();
     }
 
     public string Name => _message.Name;
     public string CommandText => $"0x{_message.Command:X4}";
+    public bool IsSampling { get; }
+    public string PortText => IsSampling ? $"sampling · {_message.RefreshMs ?? 100} ms" : "aperiodic";
     public override string ToString() => $"{Name}  ({CommandText})";
 
     public ObservableCollection<SendFieldVm> Fields { get; } = new();
@@ -93,11 +104,37 @@ public sealed class SendMessageVm : ObservableObject
 
     public string HexPreview { get => _hexPreview; private set => Set(ref _hexPreview, value); }
 
+    /// <summary>When on, a <see cref="DutStream"/> pushes the latest field values every refreshMs.</summary>
+    public bool IsStreaming
+    {
+        get => _isStreaming;
+        set
+        {
+            if (!Set(ref _isStreaming, value)) return;
+            if (value)
+            {
+                OnFieldChanged();
+                _stream?.Start();
+                _log($"⟳ {_peerId}  {Name} streaming every {_message.RefreshMs ?? 100} ms");
+            }
+            else
+            {
+                _stream?.Stop();
+                _log($"⏹ {_peerId}  {Name} stream stopped");
+            }
+        }
+    }
+
     private IReadOnlyDictionary<string, double> Values()
         => Fields.ToDictionary(f => f.Name, f => f.Value);
 
-    private void RefreshHex()
-        => HexPreview = Convert.ToHexString(_endpoint.Encode(_peerId, _message, Values(), _seq));
+    /// <summary>Publish the latest values to the stream (if any) and refresh the hex preview.</summary>
+    private void OnFieldChanged()
+    {
+        var values = Values();
+        _stream?.UpdateValues(new FieldSnapshot(values));
+        HexPreview = Convert.ToHexString(_endpoint.Encode(_peerId, _message, values, _seq));
+    }
 
     private void Send()
     {
@@ -106,8 +143,10 @@ public sealed class SendMessageVm : ObservableObject
         var shown = string.Join(", ", values.Select(kv => $"{kv.Key}={kv.Value:0.###}"));
         _log($"→ {_peerId}  {Name} (seq {_seq}) [{shown}]");
         _seq++;
-        RefreshHex();
+        OnFieldChanged();
     }
+
+    public void Dispose() => _stream?.Dispose();
 }
 
 /// <summary>A read-only incoming field (peer → DUT), shown as a live label.</summary>
@@ -162,7 +201,7 @@ public sealed class MonitorMessageVm : ObservableObject
 /// One peer's DUT-side panel: the messages the DUT can send to that peer (outbound, editable) and
 /// the messages the DUT receives from it (inbound, monitored). Built entirely from the peer's ICD.
 /// </summary>
-public sealed class PeerPanelVm : ObservableObject
+public sealed class PeerPanelVm : ObservableObject, IDisposable
 {
     private readonly Dictionary<ushort, MonitorMessageVm> _monitorsByCmd = new();
     private SendMessageVm? _selectedSend;
@@ -207,5 +246,10 @@ public sealed class PeerPanelVm : ObservableObject
     {
         if (_monitorsByCmd.TryGetValue(m.Definition.Command, out var vm))
             vm.Update(m);
+    }
+
+    public void Dispose()
+    {
+        foreach (var s in Sends) s.Dispose();
     }
 }

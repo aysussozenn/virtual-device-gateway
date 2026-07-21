@@ -1,0 +1,22 @@
+{
+  // Spacecraft bus topology — one DUT talking to THREE emulated subsystems at once.
+  //   obc  = On-Board Computer = the developer's rehosted software (the DUT).
+  //   eps / adcs / thm = neighbouring subsystems emulated by the virtual-gateway-device.
+  // The OBC both commands each subsystem AND consumes periodic telemetry back from all three.
+  "dut": "obc",
+  "dutIp": "192.168.50.1",
+  "dutMac": "02-00-00-00-00-01",
+  "participants": [
+    { "id": "eps",  "icd": "eps.icd.json",  "ip": "192.168.50.71", "mac": "02-00-00-00-50-71" },
+    { "id": "adcs", "icd": "adcs.icd.json", "ip": "192.168.50.72", "mac": "02-00-00-00-50-72" },
+    { "id": "thm",  "icd": "thm.icd.json",  "ip": "192.168.50.73", "mac": "02-00-00-00-50-73" }
+  ],
+  "interfaces": [
+    { "from": "eps",  "to": "obc",  "messages": ["EPS_TELEM", "EPS_FAULT"] },
+    { "from": "obc",  "to": "eps",  "messages": ["EPS_MODE_CMD"] },
+    { "from": "adcs", "to": "obc",  "messages": ["ADCS_STATE"] },
+    { "from": "obc",  "to": "adcs", "messages": ["SLEW_CMD"] },
+    { "from": "thm",  "to": "obc",  "messages": ["THM_TELEM"] },
+    { "from": "obc",  "to": "thm",  "messages": ["THM_SETPOINT"] }
+  ]
+}

@@ -34,6 +34,12 @@
                 <DockPanel Margin="0,8,0,0">
                     <Button DockPanel.Dock="Left" Content="Send frame ▶" Padding="14,5"
                             Command="{Binding SendCommand}"/>
+                    <ToggleButton DockPanel.Dock="Left" Margin="8,0,0,0" Padding="12,5"
+                                  Content="Stream ⟳" IsChecked="{Binding IsStreaming}"
+                                  Visibility="{Binding IsSampling, Converter={StaticResource BoolVis}}"
+                                  ToolTip="Periodically push this message every refreshMs"/>
+                    <TextBlock DockPanel.Dock="Left" Margin="10,0,0,0" VerticalAlignment="Center"
+                               Foreground="#777" FontSize="11" Text="{Binding PortText, Mode=OneWay}"/>
                     <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Foreground="#555"
                                FontFamily="Consolas" FontSize="11" TextTrimming="CharacterEllipsis"
                                Text="{Binding HexPreview, Mode=OneWay}"/>

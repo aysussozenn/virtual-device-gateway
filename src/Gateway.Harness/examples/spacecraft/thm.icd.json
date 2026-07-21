@@ -1,0 +1,37 @@
+{
+  // THM — Thermal Control subsystem, emulated by the gateway.
+  //   inbound  = THM -> OBC : thermal telemetry (slow periodic)
+  //   outbound = OBC -> THM : per-zone heater setpoints
+  "device": "thm",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      // Slow periodic thermal telemetry — streams every 250 ms.
+      "name": "THM_TELEM",
+      "command": "0x0300",
+      "direction": "inbound",
+      "port": { "kind": "sampling", "dir": "outbound", "refreshMs": 250 },
+      "fields": [
+        { "name": "temp_payload",  "type": "i16", "unit": "0.1C" },
+        { "name": "temp_batt",     "type": "i16", "unit": "0.1C" },
+        { "name": "temp_radiator", "type": "i16", "unit": "0.1C" },
+        { "name": "heater_state",  "type": "u8",  "enum": { "0": "OFF", "1": "ON" } },
+        { "name": "louver_pct",    "type": "u8",  "unit": "%", "min": 0, "max": 100, "widget": "slider" }
+      ]
+    },
+    {
+      // OBC -> THM per-zone setpoint. Hand-driven from the DUT-simulator app.
+      "name": "THM_SETPOINT",
+      "command": "0x0380",
+      "direction": "outbound",
+      "port": { "kind": "queuing", "dir": "inbound", "depth": 4 },
+      "fields": [
+        { "name": "zone",          "type": "u8",  "enum": { "0": "PAYLOAD", "1": "BATTERY", "2": "RADIATOR" } },
+        { "name": "setpoint",      "type": "i16", "unit": "0.1C", "min": -400, "max": 800 },
+        { "name": "heater_enable", "type": "u8",  "enum": { "0": "OFF", "1": "ON" } }
+      ]
+    }
+  ]
+}
