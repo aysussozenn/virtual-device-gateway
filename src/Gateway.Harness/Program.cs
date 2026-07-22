@@ -79,7 +79,7 @@ void ListAdapters()
 
 GatewayEngine BuildEngine(GatewayConfig config, IPacketTransport transport)
 {
-    var registry = DeviceFactory.BuildRegistry(config, TimeProvider.System, loggerFactory);
+    var registry = DeviceFactory.BuildRegistry(config, SystemClock.Instance, loggerFactory);
     return new GatewayEngine(transport, registry, new PassthroughProtocolCodec(),
         new EthernetGatewayOptions(), loggerFactory.CreateLogger<GatewayEngine>());
 }
@@ -163,12 +163,9 @@ async Task SelfTestAsync()
 
     var appBMac = PhysicalAddress.Parse("02-00-00-00-00-01");
     var deviceMac = PhysicalAddress.Parse("02-00-00-00-50-10");
-    var request = new IPv4Packet(IPAddress.Parse("192.168.50.1"), IPAddress.Parse("192.168.50.10"))
-    {
-        Protocol = ProtocolType.Udp, TimeToLive = 64, PayloadData = new byte[] { 0x01, 0x02, 0x03 }
-    };
-    request.UpdateIPChecksum();
-    request.UpdateCalculatedValues();
+    var request = LinkEncap.BuildUdpIp(
+        IPAddress.Parse("192.168.50.1"), IPAddress.Parse("192.168.50.10"),
+        new byte[] { 0x01, 0x02, 0x03 });
 
     Console.WriteLine("Injecting 192.168.50.1 -> 192.168.50.10 over in-memory Ethernet bus ...");
     appB.Send(LinkEncap.WrapIpv4(appB.LinkType, request, appBMac, deviceMac));

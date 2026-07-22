@@ -22,6 +22,9 @@ public sealed class EchoDut : IDisposable
     private readonly List<Entry> _entries;
     private ushort _seq = 50000;
 
+    /// <summary>Fixed source MAC for outgoing frames. When null, _dutMac is used.</summary>
+    public PhysicalAddress? FixedSrcMac { get; set; } = null;
+
     public EchoDut(IPacketTransport transport, IReadOnlyList<PeerDescriptor> peers, IPAddress dutIp, PhysicalAddress dutMac)
     {
         _transport = transport;
@@ -36,10 +39,14 @@ public sealed class EchoDut : IDisposable
 
     private void OnReceived(object? sender, PacketReceivedEventArgs e)
     {
-        var ip = LinkEncap.UnwrapIpv4(_transport.LinkType, e.Data, out _, out _);
-        if (ip is null || !ip.DestinationAddress.Equals(_dutIp)) return;
+        var ip = LinkEncap.UnwrapIpv4(_transport.LinkType, e.Data, out var eth, out _);
+        if (ip is null) return;
 
-        // Match the sender by source IP so we use the right ICD and reply to the right peer.
+        // Route by destination MAC (primary) or destination IP (fallback/loopback)
+        var dstMac = eth?.DestinationHardwareAddress;
+        if (dstMac is not null && !dstMac.Equals(_dutMac)) return;
+        if (dstMac is null && !ip.DestinationAddress.Equals(_dutIp)) return;
+
         var entry = _entries.FirstOrDefault(x => x.Peer.Ip.Equals(ip.SourceAddress));
         if (entry.Peer is null || entry.Reply is null) return;
 
@@ -55,7 +62,10 @@ public sealed class EchoDut : IDisposable
 
         var replyPayload = entry.Codec.Encode(entry.Reply, _seq++, fields);
         var replyIp = PeerChannel.BuildIp(_dutIp, entry.Peer.Ip, replyPayload);
-        _transport.Send(LinkEncap.WrapIpv4(_transport.LinkType, replyIp, _dutMac, entry.Peer.Mac));
+
+        // Src MAC: fixed if set, otherwise dut's own MAC
+        var srcMac = FixedSrcMac ?? _dutMac;
+        _transport.Send(LinkEncap.WrapIpv4(_transport.LinkType, replyIp, srcMac, entry.Peer.Mac));
     }
 
     public void Dispose() => _transport.PacketReceived -= OnReceived;

@@ -3,7 +3,10 @@ using System.Globalization;
 namespace Gateway.Icd;
 
 /// <summary>Thrown when a scenario <c>where</c> expression cannot be parsed.</summary>
-public sealed class ExpressionException(string message) : Exception(message);
+public sealed class ExpressionException : Exception
+{
+    public ExpressionException(string message) : base(message) { }
+}
 
 /// <summary>
 /// A tiny arithmetic/relational expression evaluator for scenario <c>where</c> rules — so

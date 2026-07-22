@@ -1,0 +1,30 @@
+{
+  // Peer B, emulated by the virtual-gateway-device.
+  // A (the rehosted app / DUT) sends CMD_B to B; B answers with DATA_B.
+  //   direction "outbound" = DUT -> peer   (A -> B)
+  //   direction "inbound"  = peer -> DUT   (B -> A)
+  "device": "b",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      "name": "CMD_B",
+      "command": "0x0020",
+      "direction": "outbound",
+      "fields": [
+        { "name": "setpoint", "type": "i16", "unit": "x", "min": -500, "max": 500 }
+      ]
+    },
+    {
+      "name": "DATA_B",
+      "command": "0x00A0",
+      "direction": "inbound",
+      "port": { "kind": "sampling", "dir": "outbound", "refreshMs": 20 },
+      "fields": [
+        { "name": "value",  "type": "i16", "unit": "x", "min": -500, "max": 500 },
+        { "name": "status", "type": "u8",  "enum": { "0": "OK", "1": "ERR" } }
+      ]
+    }
+  ]
+}

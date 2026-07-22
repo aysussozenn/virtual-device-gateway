@@ -3,6 +3,25 @@ using Microsoft.Extensions.Logging;
 namespace Gateway.Core;
 
 /// <summary>
+/// Minimal clock abstraction — replaces System.TimeProvider (a .NET 8 type)
+/// so the project can target net7.0 without any extra NuGet package.
+/// </summary>
+public interface IClock
+{
+    DateTimeOffset UtcNow { get; }
+    Task DelayAsync(TimeSpan delay, CancellationToken ct);
+}
+
+/// <summary>Production clock backed by the real wall clock.</summary>
+public sealed class SystemClock : IClock
+{
+    public static readonly IClock Instance = new SystemClock();
+    private SystemClock() { }
+    public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
+    public Task DelayAsync(TimeSpan delay, CancellationToken ct) => Task.Delay(delay, ct);
+}
+
+/// <summary>
 /// Pluggable strategy describing how a device responds to requests. This is the
 /// single seam for device behavior: canned responses, recorded playback, a state
 /// machine, or (later) a user-supplied plugin all implement this interface.
@@ -27,7 +46,7 @@ public interface IDeviceBehavior
 public interface IDeviceContext
 {
     DeviceIdentity Identity { get; }
-    TimeProvider Clock { get; }
+    IClock Clock { get; }
     ILogger Logger { get; }
     IDictionary<string, object?> State { get; }
 }

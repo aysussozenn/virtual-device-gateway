@@ -51,15 +51,7 @@ public sealed class AppBSimulator : IAsyncDisposable
 
     private void SendTo(Target target)
     {
-        var ip = new IPv4Packet(_srcIp, target.Ip)
-        {
-            Protocol = ProtocolType.Udp,
-            TimeToLive = 64,
-            PayloadData = new[] { (byte)(_tick & 0xFF) }
-        };
-        ip.UpdateIPChecksum();
-        ip.UpdateCalculatedValues();
-
+        var ip = LinkEncap.BuildUdpIp(_srcIp, target.Ip, new[] { (byte)(_tick & 0xFF) });
         _port.Send(LinkEncap.WrapIpv4(_port.LinkType, ip, _srcMac, target.Mac));
     }
 

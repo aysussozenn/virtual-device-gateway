@@ -7,12 +7,9 @@ using PacketDotNet;
 namespace Gateway.Ethernet;
 
 /// <summary>
-/// The capture/send engine. It consumes raw frames from an <see cref="IPacketTransport"/>,
-/// answers ARP for simulated devices (on Ethernet), routes IPv4 frames to the matching
-/// device by destination IP, and sends the device's reply back as a fresh frame.
-///
-/// The transport callback only enqueues; a single worker drains the channel so a slow
-/// device cannot block packet capture.
+/// The capture/send engine. Routes incoming frames by destination MAC (primary)
+/// or destination IP (fallback). Uses a fixed source MAC on all outgoing frames
+/// when configured via <see cref="EthernetGatewayOptions.FixedSrcMac"/>.
 /// </summary>
 public sealed class GatewayEngine : IAsyncDisposable
 {
@@ -89,8 +86,11 @@ public sealed class GatewayEngine : IAsyncDisposable
 
         if (ip is not null)
         {
-            var sourceMac = eth?.SourceHardwareAddress ?? PhysicalAddress.None;
-            await HandleIpv4Async(data, sourceMac, ip, ct).ConfigureAwait(false);
+            // Route by destination MAC (primary key); keep the source MAC so the reply
+            // can be addressed back to the requester.
+            var dstMac = eth?.DestinationHardwareAddress ?? PhysicalAddress.None;
+            var srcMac = eth?.SourceHardwareAddress ?? PhysicalAddress.None;
+            await HandleIpv4Async(data, srcMac, dstMac, ip, ct).ConfigureAwait(false);
         }
     }
 
@@ -116,15 +116,23 @@ public sealed class GatewayEngine : IAsyncDisposable
             $"ARP reply {device.Identity.Ip} is-at {device.Identity.Mac} -> {arp.SenderProtocolAddress}", device.Identity.Id);
     }
 
-    private async Task HandleIpv4Async(byte[] rawFrame, PhysicalAddress sourceMac, IPv4Packet ip, CancellationToken ct)
+    private async Task HandleIpv4Async(byte[] rawFrame, PhysicalAddress srcMac, PhysicalAddress dstMac, IPv4Packet ip, CancellationToken ct)
     {
-        if (!_router.TryResolve(ip.DestinationAddress, out var device))
+        // Primary: route by destination MAC
+        if (!_router.TryResolveByMac(dstMac, out var device))
         {
-            Observe(FrameDirection.Inbound, FrameKind.Ignored, $"IPv4 to unmanaged {ip.DestinationAddress}, ignored");
-            return;
+            // Fallback: route by destination IP
+            if (!_router.TryResolve(ip.DestinationAddress, out device))
+            {
+                Observe(FrameDirection.Inbound, FrameKind.Ignored,
+                    $"Frame to unmanaged dst {dstMac} / {ip.DestinationAddress}, ignored");
+                return;
+            }
         }
 
-        var peer = new PeerEndpoint(ip.SourceAddress, sourceMac);
+        // Reply is addressed back to the requester (its source MAC). The outgoing source MAC
+        // is overridden with FixedSrcMac in SendIpv4 when configured.
+        var peer = new PeerEndpoint(ip.SourceAddress, srcMac);
         var payload = LinkEncap.IpPayload(_transport.LinkType, rawFrame);
         Observe(FrameDirection.Inbound, FrameKind.Ipv4Request,
             $"{ip.SourceAddress} -> {ip.DestinationAddress} ({device.Identity.Id}), {payload.Length} bytes",
@@ -145,24 +153,20 @@ public sealed class GatewayEngine : IAsyncDisposable
         }
 
         var replyPayload = _codec.Encode(frame, reply);
-        SendIpv4(device.Identity, peer, ip.Protocol, replyPayload);
+        SendIpv4(device.Identity, peer, replyPayload);
         Observe(FrameDirection.Outbound, FrameKind.Ipv4Reply,
             $"{device.Identity.Ip} -> {peer.Ip} ({device.Identity.Id}), status {reply.Status}, {replyPayload.Length} bytes",
             device.Identity.Id, Convert.ToHexString(replyPayload), replyPayload);
     }
 
-    private void SendIpv4(DeviceIdentity from, PeerEndpoint to, ProtocolType protocol, byte[] payload)
+    private void SendIpv4(DeviceIdentity from, PeerEndpoint to, byte[] payload)
     {
-        var ip = new IPv4Packet(from.Ip, to.Ip)
-        {
-            Protocol = protocol,
-            TimeToLive = 64,
-            PayloadData = payload
-        };
-        ip.UpdateIPChecksum();
-        ip.UpdateCalculatedValues();
+        // Ethernet(14) + IP(20) + UDP(8) = 42-byte header, built centrally.
+        var ip = LinkEncap.BuildUdpIp(from.Ip, to.Ip, payload);
 
-        _transport.Send(LinkEncap.WrapIpv4(_transport.LinkType, ip, from.Mac, to.Mac));
+        // Src MAC: fixed source MAC if configured, otherwise device's own MAC.
+        var srcMac = _options.FixedSrcMac ?? from.Mac;
+        _transport.Send(LinkEncap.WrapIpv4(_transport.LinkType, ip, srcMac, to.Mac));
     }
 
     private void Observe(FrameDirection direction, FrameKind kind, string summary,
@@ -176,7 +180,7 @@ public sealed class GatewayEngine : IAsyncDisposable
     {
         _transport.PacketReceived -= OnPacketReceived;
         _queue.Writer.TryComplete();
-        if (_cts is not null) await _cts.CancelAsync().ConfigureAwait(false);
+        if (_cts is not null) { _cts.Cancel(); await Task.CompletedTask.ConfigureAwait(false); }
         if (_worker is not null)
         {
             try { await _worker.ConfigureAwait(false); } catch { /* ignore */ }

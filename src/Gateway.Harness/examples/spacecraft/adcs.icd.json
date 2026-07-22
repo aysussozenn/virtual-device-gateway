@@ -1,0 +1,42 @@
+{
+  // ADCS — Attitude Determination & Control System, emulated by the gateway.
+  //   inbound  = ADCS -> OBC  : attitude telemetry (periodic)
+  //   outbound = OBC  -> ADCS : slew / pointing commands
+  "device": "adcs",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      // Fast periodic attitude state — streams every 50 ms, still hand-editable.
+      "name": "ADCS_STATE",
+      "command": "0x0200",
+      "direction": "inbound",
+      "port": { "kind": "sampling", "dir": "outbound", "refreshMs": 50 },
+      "fields": [
+        { "name": "yaw",        "type": "i16", "unit": "0.01deg", "min": -18000, "max": 18000 },
+        { "name": "pitch",      "type": "i16", "unit": "0.01deg", "min": -9000,  "max": 9000 },
+        { "name": "roll",       "type": "i16", "unit": "0.01deg", "min": -18000, "max": 18000 },
+        { "name": "rate_x",     "type": "i16", "unit": "0.001dps" },
+        { "name": "rate_y",     "type": "i16", "unit": "0.001dps" },
+        { "name": "rate_z",     "type": "i16", "unit": "0.001dps" },
+        { "name": "mode",       "type": "u8",  "enum": { "0": "IDLE", "1": "DETUMBLE", "2": "SUNPOINT", "3": "NADIR", "4": "SLEW", "5": "FAULT" } },
+        { "name": "quat_valid", "type": "u8",  "enum": { "0": "NO", "1": "YES" } }
+      ]
+    },
+    {
+      // OBC -> ADCS slew command. Sampling (periodic): the DUT-simulator can stream it every
+      // 100 ms with the Stream toggle, or still fire a single frame with Send.
+      "name": "SLEW_CMD",
+      "command": "0x0280",
+      "direction": "outbound",
+      "port": { "kind": "sampling", "dir": "inbound", "refreshMs": 100 },
+      "fields": [
+        { "name": "target_yaw",   "type": "i16", "unit": "0.01deg",  "min": -18000, "max": 18000 },
+        { "name": "target_pitch", "type": "i16", "unit": "0.01deg",  "min": -9000,  "max": 9000 },
+        { "name": "slew_rate",    "type": "u16", "unit": "0.001dps", "min": 0,      "max": 5000 },
+        { "name": "mode",         "type": "u8",  "enum": { "0": "SUNPOINT", "1": "NADIR", "2": "SLEW" } }
+      ]
+    }
+  ]
+}

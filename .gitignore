@@ -2,3 +2,6 @@ bin/
 obj/
 *.user
 .vs/
+
+# Personal, machine-local Claude notes (not shared)
+CLAUDE.local.md

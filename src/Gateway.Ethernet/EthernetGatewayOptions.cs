@@ -1,3 +1,5 @@
+using System.Net.NetworkInformation;
+
 namespace Gateway.Ethernet;
 
 /// <summary>Runtime options for the capture/send engine.</summary>
@@ -13,4 +15,12 @@ public sealed class EthernetGatewayOptions
     public bool AnswerArp { get; set; } = true;
 
     public int ReadTimeoutMs { get; set; } = 1000;
+
+    /// <summary>
+    /// Fixed source MAC address used on all outgoing frames (bytes 6-11 of the Ethernet header).
+    /// When null, each device's own MAC is used as the source.
+    /// Set this to the constant MAC your protocol requires.
+    /// Example: PhysicalAddress.Parse("AA-BB-CC-DD-EE-FF")
+    /// </summary>
+    public PhysicalAddress? FixedSrcMac { get; set; } = null;
 }

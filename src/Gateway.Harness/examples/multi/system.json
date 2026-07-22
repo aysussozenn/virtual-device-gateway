@@ -1,0 +1,19 @@
+{
+  // Multi-destination topology.
+  //   A = the rehosted app (developer's software under test) = the DUT.
+  //   B, C = neighbouring software emulated by the virtual-gateway-device.
+  // A talks to BOTH B and C, and expects data back from BOTH.
+  "dut": "a",
+  "dutIp": "192.168.50.1",
+  "dutMac": "02-00-00-00-00-01",
+  "participants": [
+    { "id": "b", "icd": "b.icd.json", "ip": "192.168.50.70", "mac": "02-00-00-00-50-70" },
+    { "id": "c", "icd": "c.icd.json", "ip": "192.168.50.80", "mac": "02-00-00-00-50-80" }
+  ],
+  "interfaces": [
+    { "from": "a", "to": "b", "messages": ["CMD_B"] },
+    { "from": "b", "to": "a", "messages": ["DATA_B"] },
+    { "from": "a", "to": "c", "messages": ["CMD_C"] },
+    { "from": "c", "to": "a", "messages": ["DATA_C"] }
+  ]
+}

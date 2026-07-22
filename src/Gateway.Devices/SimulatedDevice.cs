@@ -11,7 +11,7 @@ public sealed class SimulatedDevice : ISimulatedDevice
     private readonly IDeviceBehavior _behavior;
     private readonly DeviceContext _context;
 
-    public SimulatedDevice(DeviceIdentity identity, IDeviceBehavior behavior, TimeProvider clock, ILogger logger)
+    public SimulatedDevice(DeviceIdentity identity, IDeviceBehavior behavior, IClock clock, ILogger logger)
     {
         _behavior = behavior;
         _context = new DeviceContext(identity, clock, logger);

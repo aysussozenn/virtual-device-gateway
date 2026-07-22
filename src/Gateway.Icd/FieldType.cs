@@ -35,11 +35,21 @@ public interface IFieldType
 }
 
 /// <summary>Signed/unsigned integers of 1, 2 or 4 bytes.</summary>
-public sealed class IntegerFieldType(string name, int size, bool signed, double min, double max) : IFieldType
+public sealed class IntegerFieldType : IFieldType
 {
-    public string Name { get; } = name;
-    public int Size { get; } = size;
-    public (double Min, double Max)? NaturalRange { get; } = (min, max);
+    private readonly bool signed;
+
+    public IntegerFieldType(string name, int size, bool signed, double min, double max)
+    {
+        Name = name;
+        Size = size;
+        this.signed = signed;
+        NaturalRange = (min, max);
+    }
+
+    public string Name { get; }
+    public int Size { get; }
+    public (double Min, double Max)? NaturalRange { get; }
 
     public double Read(ReadOnlySpan<byte> src, Endianness endianness)
     {

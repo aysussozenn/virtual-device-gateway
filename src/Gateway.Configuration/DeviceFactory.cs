@@ -26,7 +26,7 @@ public static class DeviceFactory
                ?? throw new InvalidOperationException($"Configuration at '{path}' was empty.");
     }
 
-    public static DeviceRegistry BuildRegistry(GatewayConfig config, TimeProvider clock, ILoggerFactory loggerFactory)
+    public static DeviceRegistry BuildRegistry(GatewayConfig config, IClock clock, ILoggerFactory loggerFactory)
     {
         var registry = new DeviceRegistry();
         foreach (var dc in config.Devices)
@@ -34,7 +34,7 @@ public static class DeviceFactory
         return registry;
     }
 
-    public static ISimulatedDevice Build(DeviceConfig dc, TimeProvider clock, ILoggerFactory loggerFactory)
+    public static ISimulatedDevice Build(DeviceConfig dc, IClock clock, ILoggerFactory loggerFactory)
     {
         var identity = new DeviceIdentity(dc.Id, IPAddress.Parse(dc.Ip), ParseMac(dc.Mac));
         IDeviceBehavior behavior = BuildBehavior(dc.Behavior);

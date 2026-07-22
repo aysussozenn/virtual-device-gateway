@@ -1,0 +1,50 @@
+{
+  // EPS — Electrical Power System, emulated by the virtual-gateway-device.
+  // The OBC (developer's code / DUT) commands EPS and consumes its telemetry.
+  //   direction "inbound"  = peer -> DUT  (EPS -> OBC)  : telemetry + events
+  //   direction "outbound" = DUT  -> peer (OBC -> EPS)  : commands
+  "device": "eps",
+  "magic": "0xAA55",
+  "endianness": "big",
+  "checksum": "crc16-ccitt",
+  "messages": [
+    {
+      // Periodic power telemetry. In the Peer Console this streams every 100 ms
+      // AND every field stays hand-editable (sliders / dropdowns) while it streams.
+      "name": "EPS_TELEM",
+      "command": "0x0100",
+      "direction": "inbound",
+      "port": { "kind": "sampling", "dir": "outbound", "refreshMs": 100 },
+      "fields": [
+        { "name": "bus_voltage", "type": "u16", "unit": "mV", "min": 0,      "max": 60000 },
+        { "name": "bus_current", "type": "i16", "unit": "mA", "min": -20000, "max": 20000 },
+        { "name": "batt_soc",    "type": "u8",  "unit": "%",  "min": 0,      "max": 100, "widget": "slider" },
+        { "name": "batt_temp",   "type": "i8",  "unit": "C",  "min": -40,    "max": 85 },
+        { "name": "solar_power", "type": "u16", "unit": "mW", "min": 0,      "max": 65000 },
+        { "name": "mode",        "type": "u8",  "enum": { "0": "SAFE", "1": "NOMINAL", "2": "CHARGING", "3": "ECLIPSE", "4": "FAULT" } }
+      ]
+    },
+    {
+      // Aperiodic fault event — sent one-shot by hand (queuing port, no periodic push).
+      "name": "EPS_FAULT",
+      "command": "0x0101",
+      "direction": "inbound",
+      "port": { "kind": "queuing", "dir": "outbound", "depth": 8 },
+      "fields": [
+        { "name": "code",    "type": "u16", "enum": { "0": "NONE", "1": "UNDERVOLT", "2": "OVERCURRENT", "3": "CELL_IMBALANCE", "4": "OVERTEMP" } },
+        { "name": "latched", "type": "u8",  "enum": { "0": "NO", "1": "YES" } }
+      ]
+    },
+    {
+      // OBC -> EPS command. Editable + sent by hand from the DUT-simulator app.
+      "name": "EPS_MODE_CMD",
+      "command": "0x0180",
+      "direction": "outbound",
+      "port": { "kind": "queuing", "dir": "inbound", "depth": 8 },
+      "fields": [
+        { "name": "mode",       "type": "u8", "enum": { "0": "SAFE", "1": "NOMINAL", "2": "CHARGING", "3": "ECLIPSE" } },
+        { "name": "heater_pct", "type": "u8", "unit": "%", "min": 0, "max": 100, "widget": "slider" }
+      ]
+    }
+  ]
+}

@@ -16,7 +16,8 @@
         { "name": "a",    "type": "u16",  "min": 0,     "max": 65535 },
         { "name": "b",    "type": "i16",  "min": -1000, "max": 1000 },
         { "name": "c",    "type": "f32" },
-        { "name": "gain", "type": "q8_8", "unit": "x",  "min": 0, "max": 20 }
+        { "name": "gain", "type": "q8_8", "unit": "x",  "min": 0, "max": 20 },
+        { "name": "status", "type": "u8", "enum": { "0": "IDLE", "1": "RUNNING", "2": "ERROR", "3": "CALIBRATING" } }
       ]
     },
     {

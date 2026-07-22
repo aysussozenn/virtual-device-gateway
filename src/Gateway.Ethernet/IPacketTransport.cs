@@ -3,9 +3,14 @@ using PacketDotNet;
 namespace Gateway.Ethernet;
 
 /// <summary>Raw frame received from the wire (link-layer bytes, no decoding).</summary>
-public sealed class PacketReceivedEventArgs(byte[] data) : EventArgs
+public sealed class PacketReceivedEventArgs : EventArgs
 {
-    public byte[] Data { get; } = data;
+    public PacketReceivedEventArgs(byte[] data)
+    {
+        Data = data;
+    }
+
+    public byte[] Data { get; }
 }
 
 /// <summary>

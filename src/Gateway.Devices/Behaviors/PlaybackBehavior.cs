@@ -7,10 +7,17 @@ namespace Gateway.Devices.Behaviors;
 /// "the real device produced this trace" scenarios. Optionally loops; otherwise goes
 /// silent once the sequence is exhausted.
 /// </summary>
-public sealed class PlaybackBehavior(IReadOnlyList<DeviceReply> sequence, bool loop = false) : IDeviceBehavior
+public sealed class PlaybackBehavior : IDeviceBehavior
 {
-    private readonly IReadOnlyList<DeviceReply> _sequence = sequence;
+    private readonly IReadOnlyList<DeviceReply> _sequence;
+    private readonly bool loop;
     private int _index;
+
+    public PlaybackBehavior(IReadOnlyList<DeviceReply> sequence, bool loop = false)
+    {
+        _sequence = sequence;
+        this.loop = loop;
+    }
 
     public ValueTask<DeviceReply?> RespondAsync(DeviceRequest request, IDeviceContext context, CancellationToken ct)
     {

@@ -12,7 +12,7 @@ public sealed class DirectionBrushConverter : IValueConverter
     private static readonly SolidColorBrush NeutralBrush = new((Color)ColorConverter.ConvertFromString("#9CA3AF"));
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => value as string switch
+        => (value as string) switch
         {
             "Inbound" => InboundBrush,
             "Outbound" => OutboundBrush,

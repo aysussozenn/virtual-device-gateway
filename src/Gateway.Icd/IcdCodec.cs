@@ -11,8 +11,15 @@ public sealed record DecodeResult(DecodedMessage? Message, IReadOnlyList<Conform
 /// <see cref="IcdSpec"/>. This is the seam the (pending) protocol spec plugs into — the
 /// ICD *is* that spec. Frame layout: [magic][command][seq][fields...][crc16].
 /// </summary>
-public sealed class IcdCodec(IcdSpec spec) : IFrameCodec
+public sealed class IcdCodec : IFrameCodec
 {
+    private readonly IcdSpec spec;
+
+    public IcdCodec(IcdSpec spec)
+    {
+        this.spec = spec;
+    }
+
     private const int HeaderSize = 6;   // magic(2) + command(2) + seq(2)
     private int TrailerSize => spec.Checksum == ChecksumAlgo.None ? 0 : 2;
 
